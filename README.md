@@ -32,6 +32,8 @@ This repository houses code and data to identify selection on traits controlled 
 ***Analyze10.html:*** HTML-readable code
 ***Map10.Rmd:*** Code to do seleciton mapping in 10-QTL simulation
 ***Map10.html:*** HTML-readable code
+***Analyze10_L44.Rmd:*** Code to tune LD threshold for determining M_eff. Code determines mean LD decay over a specific distance (Specified in the 44th line of the QMSim LD output file for the 10-QTL simulation)and calculate the false positive rate. This example script was repeatedly run for lines 44-58 and used to create raw data for generating the M_eff supplemental figure in the manuscript.
+
 
 ***qtl_50.prm:*** 50-QTL simulation parameter file
 ***run_50.sh:*** 50-QTL simulation submission script for OpenLava cluster
@@ -39,6 +41,7 @@ This repository houses code and data to identify selection on traits controlled 
 ***Analyze50.html:*** HTML-readable code
 ***Map50.Rmd:*** Code to do seleciton mapping in 50-QTL simulation
 ***Map50.html:*** HTML-readable code
+***Analyze50_L44.Rmd:*** Code to tune LD threshold for determining M_eff. Code determines mean LD decay over a specific distance (Specified in the 44th line of the QMSim LD output file for the 50-QTL simulation)and calculate the false positive rate. This example script was repeatedly run for lines 44-58 and used to create raw data for generating the M_eff supplemental figure in the manuscript.
 
 ***qtl_100.prm:*** 100-QTL simulation parameter file
 ***run_100.sh:*** 100-QTL simulation submission script for OpenLava cluster
@@ -46,6 +49,7 @@ This repository houses code and data to identify selection on traits controlled 
 ***Analyze100.html:*** HTML-readable code
 ***Map100.Rmd:*** Code to do seleciton mapping in 100-QTL simulation
 ***Map100.html:*** HTML-readable code
+***Analyze100_L44.Rmd:*** Code to tune LD threshold for determining M_eff. Code determines mean LD decay over a specific distance (Specified in the 44th line of the QMSim LD output file for the 100-QTL simulation)and calculate the false positive rate. This example script was repeatedly run for lines 44-58 and used to create raw data for generating the M_eff supplemental figure in the manuscript.
 
 ***qtl_1000.prm:*** 1000-QTL simulation parameter file
 ***run_1000.sh:*** 1000-QTL simulation submission script for OpenLava cluster
@@ -53,5 +57,14 @@ This repository houses code and data to identify selection on traits controlled 
 ***Analyze1000.html:*** HTML-readable code
 ***Map1000.Rmd:*** Code to do seleciton mapping in 1000-QTL simulation
 ***Map1000.html:*** HTML-readable code
+***Analyze1000_L44.Rmd:*** Code to tune LD threshold for determining M_eff. Code determines mean LD decay over a specific distance (Specified in the 44th line of the QMSim LD output file for the 1000-QTL simulation)and calculate the false positive rate. This example script was repeatedly run for lines 44-58 and used to create raw data for generating the M_eff supplemental figure in the manuscript.
+
+***LD_Thresh_Fig.R:*** R code to compile LD threshold information for generating M_eff supplemental figure and determining appropriate M_eff.
+***PowerFigure.R:*** Code to compile power information comparing G-hat to Fst mapping and generate Figure 1 in the manuscript.
+
 
 ## Data
+Maize data are published in:
+Lorenz, A. J., Beissinger, T.M., Rodrigues, R., de Leon, N. 2015. [Selection for silage yield and composition did not affect genomic diversity within the Wisconsin Quality Synthetic maize population.](http://www.g3journal.org/content/early/2015/02/02/g3.114.015263.abstract) Genes Genomes Genetics. DOI: 10.1534/g3.114.015263.
+
+Chicken data will be made available upon publication

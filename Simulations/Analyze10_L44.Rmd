@@ -1,0 +1,106 @@
+---
+title: "Analysis of 10-QTL simulated datasets to test for polygenic selection"
+output: html_document
+author: Timothy Beissinger
+date: 10-6-2017
+---
+
+### Summary
+This script will analyze drift simulations with a particular value for Meff. It will calculate the false positive rate and the mean R2 corresponding to that value.
+
+### Set preliminary values and load function.
+These values will store results of the loop
+
+```{r}
+Pvals.drift <- c()
+R2 <- c()
+source("Ghat.R")
+
+Meff <- 40000 #corresponding to decay bin 0 - 0.05
+
+```
+
+### Start the loop over drift simulations.
+
+Simulations were performed on the IRCF Biocluster using the software QMSim. Each iteration of the loop will load data, manipulate data, conduct a test for selection, and record the p-value.
+
+```{r}
+for(sim in 1:100){
+	iter <- sprintf("%03i",sim)
+	directory="/home/beissingert/data/PolySelect_bigsims/QTL_10_big/r_qtl_10"
+
+	#load genotypes and phenotypes
+      	pheno <- read.table(paste(directory, "/DriftPop_data_",iter,".txt",sep=""),header=T,stringsAsFactors=F)
+	map <- read.table(paste(directory, "/lm_mrk_",iter,".txt",sep=""),header=T,stringsAsFactors=F)
+	geno <- read.table(paste(directory, "/DriftPop_mrk_",iter,".txt-head",sep=""),header=F,stringsAsFactors=F,skip=1,sep="", colClasses=c("numeric","character")) # read genos as characters
+	qtlMap <- read.table(paste(directory, "/lm_qtl_",iter,".txt",sep=""),header=T,stringsAsFactors=F)
+
+	#load allele frequencies
+      	freqs0<-read.table(paste(directory, "/DriftPop_freq_mrk_",iter,".txt",sep=""),header=T,nrows=nrow(map),fill=T,stringsAsFactors=F)
+	freqs20<-read.table(paste(directory, "/DriftPop_freq_mrk_",iter,".txt",sep=""),header=F,skip={4*nrow(map)+1},fill=T,stringsAsFactors=F)
+
+	### Manipulate genotypes by coding to -1,0,1 and so that markers are columns, individuals are rows.
+	gen <- matrix(NA,nrow=nrow(map),ncol=nrow(geno))
+	gen <- as.data.frame(gen)
+	names(gen) <- geno[,1]
+	for(i in 1:1000){
+	  #print(i)
+	  tmp <- as.numeric(unlist(strsplit(geno[i,2],split="")))
+	  tmp[which(tmp == 0)] <- -1
+	  tmp[which(tmp == 3 | tmp ==4)] <- 0
+	  tmp[which(tmp==2)] <- 1
+	  gen[,i] <- tmp
+	 }
+	gen<-t(gen)
+	gc()
+
+	### Calculate allele frequencies
+	#Gen 0
+	names(freqs0)[4]<- "Allele1"
+	names(freqs0)[5]<- "Allele2"
+	freqs0$Allele2[which(substr(freqs0$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+	freqs0$Allele1[which(substr(freqs0$Allele1,1,1)==2)] <- "1:0.00000" 
+	freqs0$Allele2[which(substr(freqs0$Allele1,3,3)==1)] <- "2:0.00000" ##
+	freqs0$Allele1 <- as.numeric(substr(freqs0$Allele1,3,1000))
+	freqs0$Allele2 <- as.numeric(substr(freqs0$Allele2,3,1000))
+
+	#Gen 20
+	names(freqs20)[4]<- "Allele1"
+	names(freqs20)[5]<- "Allele2"
+	freqs20$Allele2[which(substr(freqs20$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+	freqs20$Allele1[which(substr(freqs20$Allele1,1,1)==2)] <- "1:0.00000" 
+	freqs20$Allele2[which(substr(freqs20$Allele1,3,3)==1)] <- "2:0.00000"  ##
+	freqs20$Allele1 <- as.numeric(substr(freqs20$Allele1,3,1000))
+	freqs20$Allele2 <- as.numeric(substr(freqs20$Allele2,3,1000))
+
+	#Calculate change
+	change2<-freqs20$Allele2-freqs0$Allele2
+
+	### Setup for function
+	geno <- gen
+	phen <- as.matrix(pheno[1:1000,10])
+	rownames(phen)<-pheno[1:1000,1]
+	change=change2
+		
+	# Run function
+	test<- Ghat_func(geno=geno,phen=phen,change=change2,method = "scale", num_eff = Meff,  perms=1000, plot="Both")
+	Pvals.drift[as.numeric(iter)] <- test$p.val
+
+	# Record LD value
+	R2[sim] <- as.numeric(substr(readLines(paste("../../QTL_10_big/r_qtl_10/DriftPop_ld_decay_",iter,".txt",sep=""))[44],10,15))
+}
+```
+
+### Report the results
+
+Below are some summary statistics about the results. Note also that I save the workspace.
+
+```{r}
+hist(Pvals.drift)
+print(Pvals.drift)
+print(mean(R2))
+
+length(which(Pvals.drift<=0.05))/length(Pvals.drift)
+
+save.image("QTL-10_L44.RData")
+```
