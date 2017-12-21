@@ -30,20 +30,28 @@ This repository houses code and data to identify selection on traits controlled 
 ***run_10.sh:*** 10-QTL simulation submission script for OpenLava cluster
 ***Analyze10.Rmd:*** Code to analyze 10-QTL simulation
 ***Analyze10.html:*** HTML-readable code
+***Map10.Rmd:*** Code to do seleciton mapping in 10-QTL simulation
+***Map10.html:*** HTML-readable code
 
 ***qtl_50.prm:*** 50-QTL simulation parameter file
 ***run_50.sh:*** 50-QTL simulation submission script for OpenLava cluster
 ***Analyze50.Rmd:*** Code to analyze 50-QTL simulation
 ***Analyze50.html:*** HTML-readable code
+***Map50.Rmd:*** Code to do seleciton mapping in 50-QTL simulation
+***Map50.html:*** HTML-readable code
 
 ***qtl_100.prm:*** 100-QTL simulation parameter file
 ***run_100.sh:*** 100-QTL simulation submission script for OpenLava cluster
 ***Analyze100.Rmd:*** Code to analyze 100-QTL simulation
 ***Analyze100.html:*** HTML-readable code
+***Map100.Rmd:*** Code to do seleciton mapping in 100-QTL simulation
+***Map100.html:*** HTML-readable code
 
 ***qtl_1000.prm:*** 1000-QTL simulation parameter file
 ***run_1000.sh:*** 1000-QTL simulation submission script for OpenLava cluster
 ***Analyze1000.Rmd:*** Code to analyze 1000-QTL simulation
 ***Analyze1000.html:*** HTML-readable code
+***Map1000.Rmd:*** Code to do seleciton mapping in 1000-QTL simulation
+***Map1000.html:*** HTML-readable code
 
 ## Data

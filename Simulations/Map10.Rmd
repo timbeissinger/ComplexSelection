@@ -1,0 +1,164 @@
+---
+title: "Do Mapping on 10-QTL Complex Selection Simulations"
+author: "Timothy M. Beissinger"
+date: "August 25, 2017"
+output: html_document
+---
+
+### Summary
+We simulated a trait controlled by **10** QTL 100 times. For each, one population was selected for an increase in the trait and one population was not selected at all (drift only). Selection or drift persisted for 20 generations. 
+
+### Set preliminary values and load Fst function
+These values will store results of loop.
+
+```{r}
+#directory = "/home/beissinger/Documents/ComplexSelection/MapSims/Ten" #this is for running locally
+directory = "/home/beissingert/data/PolySelect_bigsims/QTL_10_big/r_qtl_10" #this is for running on ircf
+source("http://beissingerlab.org/docs/vectorFst.R")
+results <- matrix(NA,nrow=100000,ncol=102)
+results <- data.frame(results)
+names(results)<-c("Chr","Pos",paste("sim",1:100,sep=""))
+results$Chr <- c(rep(1,10000),rep(2,10000),rep(3,10000),rep(4,10000),rep(5,10000),rep(6,10000),rep(7,10000),rep(8,10000),rep(9,10000),rep(10,10000))
+results$Pos <- rep(round(seq(0.00001,100,length.out=10000),5),10)
+fullMap <- results[,1:2]
+```
+
+### Start the drift loop to calculate all Fst values across drift simulations. 
+These will be used to set critical values
+
+```{r}
+### start loop
+for(sim in 1:100){
+iter <- sprintf("%03i",sim)
+# load map and allele frequencies
+map <- read.table(paste(directory, "/lm_mrk_",iter,".txt",sep=""),header=T,fill=T,stringsAsFactors=F)
+freqs <- read.table(paste(directory, "/DriftPop_freq_mrk_",iter,".txt",sep=""),header=T,fill=T,stringsAsFactors=F)
+
+nMarkers <- nrow(map)
+
+freqs0 <- freqs[1:nMarkers,]
+freqs20 <- freqs[{4*nMarkers +1}:nrow(freqs),]
+
+
+### Calculate allele frequencies
+#Gen 0
+names(freqs0)[4]<- "Allele1"
+names(freqs0)[5]<- "Allele2"
+freqs0$Allele2[which(substr(freqs0$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+freqs0$Allele1[which(substr(freqs0$Allele1,1,1)==2)] <- "1:0.00000" 
+freqs0$Allele2[which(substr(freqs0$Allele1,3,3)==1)] <- "2:0.00000" ##
+freqs0$Allele1 <- as.numeric(substr(freqs0$Allele1,3,1000))
+freqs0$Allele2 <- as.numeric(substr(freqs0$Allele2,3,1000))
+
+#Gen 20
+names(freqs20)[4]<- "Allele1"
+names(freqs20)[5]<- "Allele2"
+freqs20$Allele2[which(substr(freqs20$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+freqs20$Allele1[which(substr(freqs20$Allele1,1,1)==2)] <- "1:0.00000" 
+freqs20$Allele2[which(substr(freqs20$Allele1,3,3)==1)] <- "2:0.00000"  ##
+freqs20$Allele1 <- as.numeric(substr(freqs20$Allele1,3,1000))
+freqs20$Allele2 <- as.numeric(substr(freqs20$Allele2,3,1000))
+
+### Calculate Fst
+
+Fst <-vectorFst(freqs0$Allele1,freqs20$Allele1)
+Fst[which(is.nan(Fst))] <- 0 # NaN's were fixed in generation 0.
+
+tmp <- cbind(map,Fst)
+merged <- merge(fullMap,by.x=c("Chr","Pos"),tmp,by.y=c("Chr","Position"),all.x=T,all.y=F)
+results[,sim+2] <- merged$Fst
+}
+```
+
+### Determine signficance threshold
+To specify a 5% experiment-wide false positive rate, we will identify the highest drifted Fst value in each simulation and then calculate the 95th quantile of this value.
+
+```{r}
+maxes <- apply(results[,3:102],2,max,na.rm=T)
+threshold <- quantile(maxes,0.95)
+print(threshold)
+```
+
+### Do mapping with real data, determine true positive rate.
+First, create storage vector and vector of true positions.
+
+```{r}
+positions <- seq(5000,95000,length.out=10)
+tp <- c() # true positive vector
+fp <- c() # false positive vector
+```
+
+```{r}
+
+### start loop
+for(sim in 1:100){
+iter <- sprintf("%03i",sim)
+# load map and allele frequencies
+map <- read.table(paste(directory, "/lm_mrk_",iter,".txt",sep=""),header=T,fill=T,stringsAsFactors=F)
+freqs <- read.table(paste(directory, "/SelectPop_freq_mrk_",iter,".txt",sep=""),header=T,fill=T,stringsAsFactors=F)
+
+nMarkers <- nrow(map)
+
+freqs0 <- freqs[1:nMarkers,]
+freqs20 <- freqs[{4*nMarkers +1}:nrow(freqs),]
+
+
+### Calculate allele frequencies
+#Gen 0
+names(freqs0)[4]<- "Allele1"
+names(freqs0)[5]<- "Allele2"
+freqs0$Allele2[which(substr(freqs0$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+freqs0$Allele1[which(substr(freqs0$Allele1,1,1)==2)] <- "1:0.00000" 
+freqs0$Allele2[which(substr(freqs0$Allele1,3,3)==1)] <- "2:0.00000" ##
+freqs0$Allele1 <- as.numeric(substr(freqs0$Allele1,3,1000))
+freqs0$Allele2 <- as.numeric(substr(freqs0$Allele2,3,1000))
+
+#Gen 20
+names(freqs20)[4]<- "Allele1"
+names(freqs20)[5]<- "Allele2"
+freqs20$Allele2[which(substr(freqs20$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+freqs20$Allele1[which(substr(freqs20$Allele1,1,1)==2)] <- "1:0.00000" 
+freqs20$Allele2[which(substr(freqs20$Allele1,3,3)==1)] <- "2:0.00000"  ##
+freqs20$Allele1 <- as.numeric(substr(freqs20$Allele1,3,1000))
+freqs20$Allele2 <- as.numeric(substr(freqs20$Allele2,3,1000))
+
+### Calculate Fst
+
+Fst <-vectorFst(freqs0$Allele1,freqs20$Allele1)
+Fst[which(is.nan(Fst))] <- 0 # NaN's were fixed in generation 0.
+
+tmp <- cbind(map,Fst)
+merged <- merge(fullMap,by.x=c("Chr","Pos"),tmp,by.y=c("Chr","Position"),all.x=T,all.y=F)
+signif <- which(merged$Fst > threshold)
+
+### Determine number of true positives
+tp[sim] <- 0
+for(i in 1:length(positions)){
+   seq <-seq(positions[i]-5,positions[i]+5)
+   if (length(intersect(seq,signif) > 1)) tp[sim] <- tp[sim]+1
+} 
+
+### Determine number of false positives
+all <- c()
+for(i in 1:length(positions)) all <- c(all,seq(positions[i]-5,positions[i]+5))
+fp[sim] <- length(signif) - length(intersect(all,signif))
+}
+```
+
+### Plot and print results
+
+```{r}
+par(mfrow=c(1,2))
+plot(tp/length(positions),ylim=c(0,1),col="darkgreen",pch=19,main="True Positive Detection Rate",ylab="Detection Rate",xlab="Simulation Number")
+plot(fp,col="darkred",pch=19,main="False Positives",ylab="Number of False Positives",xlab="Simulation Number")
+hist(tp,main="True Positives")
+hist(fp,main="False Positives")
+mean(tp)
+median(tp)
+mean(fp)
+median(fp)
+
+
+### Save workspace
+save.image("Map10.RData")
+```
