@@ -1,0 +1,282 @@
+---
+title: "Chicken Test of Selection"
+author: "Timothy M. Beissinger"
+date: "Sept 20, 2017"
+output: html_document
+---
+
+Chicken data from Jochen and Henner will be used to test the hypothesis that selection has operated on quantitative traits in chickens. To do this, allelic effects estimates and allele frequency change over time were computed by Jochen. The sum of frequency change multiplied by effect size will be computed. If effects and frequency changes are related, this sum should be non-zero and in the direction that the trait was selected. A semi-parametric permutation test will be conducted to test for significance.
+
+### Data loading and prep
+
+```{r}
+setwd("/home/beissinger/Documents/ComplexSelection/Chickens")
+### genos
+rawData <- readRDS("manhattanBrownWhiteAllPhenotypes_20160607.RDS")
+```
+
+Split raw data into white and brown lists
+```{r}
+white <- rawData$whiteLayers
+brown<-rawData$brownLayers
+```
+
+Now sum effective markers per chromosome to obtain effective number of markers. (all chromosomes <=28 currently included in analysis)
+```{r}
+#whiteDecay<-c(1256,943,950,1212,1036,1155,802,943,880,1465,821,1069,761,1107,894,14,764,880,1078,502,852,1026,400,378,229,311,498,432) #r2<0.05
+whiteDecay<-c(1793,1343,1404,1830,1554,2212,1302,1140,1118,1824,1024,1454,1102,1765,1209,16,892,1079,1311,807,1139,1118,580,540,256,438,737,609) #r2<0.03
+whiteNum <- sum(table(rawData$whiteLayers$BruchF1$chr)/whiteDecay)
+whiteNum
+
+#brownDecay<-c(1691,1500,1400,1950,1365,1427,1204,1364,1245,1243,1291,1358,638,1342,1588,250,812,515,693,833,695,786,546,826,153,428,427,548) #r2<0.05
+brownDecay<-c(2607,2146,2320,2620,2252,2304,1832,1997,1752,1684,2859,2001,1178,1907,1989,255,1374,983,866,1204,986,961,716,1240,352,598,942,662) #r2<0.03
+brownNum <- sum(table(rawData$brownLayers$BruchF1$chr)/brownDecay)
+brownNum
+```
+
+
+Now implement test for complex selection
+```{r}
+#white.result<-matrix(NA,nrow=2,ncol=length(white))
+white.result <- list()
+brown.result <- list()
+
+traits=c("Fracture Strength 1","Fracture Strength 2","Crack","Egg Weight 1","Egg Weight 2","Form","Feed","Body Weight","Egg White","Laying Rate 1","Laying Rate 2","Laying Rate 3")
+source("/home/beissinger/Documents/ComplexSelection/R-Function/Ghat.R")
+
+for(i in 1:length(white)){
+  white.result[[i]]<-Ghat_func_effectsKnown(effects=white[[i]]$alpha,change=white[[i]]$deltaP,method="scale",perms=1000,plot="Ghat",num_eff=whiteNum)
+  mtext(paste("White layers,", traits[i],"(",names(white)[i] ,")", ", p-value = ", round(white.result[[i]]$p.val,3),cex=2))
+  brown.result[[i]]<-Ghat_func_effectsKnown(effects=brown[[i]]$alpha,change=brown[[i]]$deltaP,method="scale",perms=1000,plot="Ghat",num_eff=brownNum)
+    mtext(paste("Brown layers,", traits[i], "(",names(brown)[i],")", ", p-value = ", round(brown.result[[i]]$p.val,3),cex=2))
+}
+
+names(white.result)<-names(white)
+names(brown.result)<-names(brown)
+```
+
+
+
+Below I will make plots for the manuscript
+```{r}
+jpeg(file = "chickens_manuscript_plot_reverse_inlay_EW1.jpg", height = 8, width = 6, ,units="in",res=300)
+par(cex=0.6,mar=c(5,4,2,2)+0.1)
+## some pretty colors
+colfunc <- colorRampPalette(c("lightblue", "darkred","red","yellow"))
+library(MASS)
+
+# White laying rate
+par(fig=c(0,0.5,.66666,1))
+i<- 11
+flip <- sample(c(-1,1),nrow(white[[i]]),replace=T) ## Flip half of frequency changes for pretty plot
+whiteDeltaP <- white[[i]]$deltaP*flip
+white[[i]]$deltaP <- whiteDeltaP ## End flipping of frequency changes
+white[[i]]$alpha <- white[[i]]$alpha*flip ## Flip corresponding estimated effects
+z <- kde2d(white[[i]]$deltaP, white[[i]]$alpha, n=200)
+plot(white[[i]]$deltaP,white[[i]]$alpha,xaxt="s",yaxt="s",xlab="Frequency change",ylab="Effect size",cex.axis=0.75,main="WL laying rate")
+contour(z,drawlabels=F,nlevels=500,col=colfunc(500),add=T)
+abline(lm(white[[i]]$alpha~white[[i]]$deltaP),col="darkred",lwd=3)
+
+  # Brown laying rate
+par(fig=c(0.5,1,.66666,1),new=T)
+i<- 11
+flip <- sample(c(-1,1),nrow(brown[[i]]),replace=T) ## Flip half of frequency changes for pretty plot
+brownDeltaP <- brown[[i]]$deltaP*flip
+brown[[i]]$deltaP <- brownDeltaP ## End flipping of frequency changes
+brown[[i]]$alpha <- brown[[i]]$alpha*flip ## Flip corresponding estimated effects
+z <- kde2d(brown[[i]]$deltaP, brown[[i]]$alpha, n=200)
+plot(brown[[i]]$deltaP,brown[[i]]$alpha,xaxt="s",yaxt="s",xlab="Frequency change",ylab="Effect size",cex.axis=0.75,main="BL laying rate")
+contour(z,drawlabels=F,nlevels=500,col=colfunc(500),add=T)
+abline(lm(brown[[i]]$alpha~brown[[i]]$deltaP),col="darkred",lwd=3)
+
+# WHite egg weight 1
+i<-4
+par(fig=c(0,0.5,.33333,.66666),new=T)
+flip <- sample(c(-1,1),nrow(white[[i]]),replace=T) ## Flip half of frequency changes for pretty plot
+whiteDeltaP <- white[[i]]$deltaP*flip
+white[[i]]$deltaP <- whiteDeltaP ## End flipping of frequency changes
+white[[i]]$alpha <- white[[i]]$alpha*flip ## Flip corresponding estimated effects
+z <- kde2d(white[[i]]$deltaP, white[[i]]$alpha, n=200)
+plot(white[[i]]$deltaP,white[[i]]$alpha,xaxt="s",yaxt="s",xlab="Frequency change",ylab="Effect size",cex.axis=0.75,main="WL egg weight")
+contour(z,drawlabels=F,nlevels=500,col=colfunc(500),add=T)
+abline(lm(white[[i]]$alpha~white[[i]]$deltaP),col="darkred",lwd=3)
+
+# Brown egg weight
+i<-4
+par(fig=c(0.5,1,.33333,.66666),new=T)
+flip <- sample(c(-1,1),nrow(brown[[i]]),replace=T) ## Flip half of frequency changes for pretty plot
+brownDeltaP <- brown[[i]]$deltaP*flip
+brown[[i]]$deltaP <- brownDeltaP ## End flipping of frequency changes
+brown[[i]]$alpha <- brown[[i]]$alpha*flip ## Flip corresponding estimated effects
+z <- kde2d(brown[[i]]$deltaP, brown[[i]]$alpha, n=200)
+plot(brown[[i]]$deltaP,brown[[i]]$alpha,xaxt="s",yaxt="s",xlab="Frequency change",ylab="Effect size",cex.axis=0.75,main="BL egg weight")
+contour(z,drawlabels=F,nlevels=500,col=colfunc(500),add=T)
+abline(lm(brown[[i]]$alpha~brown[[i]]$deltaP),col="darkred",lwd=3)
+
+# WHite fracture strength
+par(fig=c(0,0.5,0,.33333),new=T)
+i<- 1
+flip <- sample(c(-1,1),nrow(white[[i]]),replace=T) ## Flip half of frequency changes for pretty plot
+whiteDeltaP <- white[[i]]$deltaP*flip
+white[[i]]$deltaP <- whiteDeltaP ## End flipping of frequency changes
+white[[i]]$alpha <- white[[i]]$alpha*flip ## Flip corresponding estimated effects
+z <- kde2d(white[[i]]$deltaP, white[[i]]$alpha, n=200)
+plot(white[[i]]$deltaP,white[[i]]$alpha,xaxt="s",yaxt="s",xlab="Frequency change",ylab="Effect size",cex.axis=0.75,main="WL eggshell breaking strength")
+contour(z,drawlabels=F,nlevels=500,col=colfunc(500),add=T)
+abline(lm(white[[i]]$alpha~white[[i]]$deltaP),col="darkred",lwd=3)
+
+# Brown fracture strength
+par(fig=c(0.5,1,0,.33333),new=T)
+i<- 1
+flip <- sample(c(-1,1),nrow(brown[[i]]),replace=T) ## Flip half of frequency changes for pretty plot
+brownDeltaP <- brown[[i]]$deltaP*flip
+brown[[i]]$deltaP <- brownDeltaP ## End flipping of frequency changes
+brown[[i]]$alpha <- brown[[i]]$alpha*flip ## Flip corresponding estimated effects
+z <- kde2d(brown[[i]]$deltaP, brown[[i]]$alpha, n=200)
+plot(brown[[i]]$deltaP,brown[[i]]$alpha,xaxt="s",yaxt="s",xlab="Frequency change",ylab="Effect size",cex.axis=0.75,main="BL eggshell breaking strength")
+contour(z,drawlabels=F,nlevels=500,col=colfunc(500),add=T)
+abline(lm(brown[[i]]$alpha~brown[[i]]$deltaP),col="darkred",lwd=3)
+
+
+#############
+###insets####
+#############
+par(cex=0.55)
+#white laying rate
+i<-11
+par(fig=c(.83-.275-.5,.99-.275-.5,.84,.965),mgp=c(1,.3,0), new=TRUE)
+par(mar=c(2,2,0,0))
+left <- min(mean(white.result[[i]]$Ghat_perm)-4*white.result[[i]]$sd_eff,white.result[[i]]$Ghat)
+right <- max(mean(white.result[[i]]$Ghat_perm)+4*white.result[[i]]$sd_eff,white.result[[i]]$Ghat)
+plot(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(white.result[[i]]$Ghat_perm),sd=white.result[[i]]$sd_eff),col="red",lwd=2,type="l",yaxt="n",ylab="",xlab="",xaxt="n",main="")
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "gray")
+lines(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(white.result[[i]]$Ghat_perm),sd=white.result[[i]]$sd_eff),col="red",lwd=2)
+abline(v=white.result[[i]]$Ghat,lwd=2,col="darkblue")
+text(par("usr")[1]+.18*(par("usr")[2]-par("usr")[1]),par("usr")[3]+0.8*(par("usr")[4]-par("usr")[3]),paste("p =  \n", sprintf("%.3f",round(white.result[[i]]$p.val,3))),cex=1.1,font=2)
+
+
+#brown laying rate
+i<-11
+par(fig=c(.83-.275,.99-.275,.84,.965),mgp=c(1,.3,0), new=TRUE)
+par(mar=c(2,2,0,0))
+left <- min(mean(brown.result[[i]]$Ghat_perm)-4*brown.result[[i]]$sd_eff,brown.result[[i]]$Ghat)
+right <- max(mean(brown.result[[i]]$Ghat_perm)+4*brown.result[[i]]$sd_eff,brown.result[[i]]$Ghat)
+plot(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(brown.result[[i]]$Ghat_perm),sd=brown.result[[i]]$sd_eff),col="red",lwd=2,type="l",yaxt="n",ylab="",xlab="",xaxt="n",main="")
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "gray")
+lines(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(brown.result[[i]]$Ghat_perm),sd=brown.result[[i]]$sd_eff),col="red",lwd=2)
+abline(v=brown.result[[i]]$Ghat,lwd=2,col="darkblue")
+text(par("usr")[1]+.18*(par("usr")[2]-par("usr")[1]),par("usr")[3]+0.8*(par("usr")[4]-par("usr")[3]),paste("p =  \n", sprintf("%.3f",round(brown.result[[i]]$p.val,3))),cex=1.1,font=2)
+
+#white egg weight 1
+par(fig=c(.83-.275-.5,.99-.275-.5,.84-.33333,.965-.33333),mgp=c(1,.3,0), new=TRUE)
+par(mar=c(2,2,0,0))
+i<- 4
+left <- min(mean(white.result[[i]]$Ghat_perm)-4*white.result[[i]]$sd_eff,white.result[[i]]$Ghat)
+right <- max(mean(white.result[[i]]$Ghat_perm)+4*white.result[[i]]$sd_eff,white.result[[i]]$Ghat)
+plot(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(white.result[[i]]$Ghat_perm),sd=white.result[[i]]$sd_eff),col="red",lwd=2,type="l",yaxt="n",ylab="",xlab="",xaxt="n",main="")
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "gray")
+lines(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(white.result[[i]]$Ghat_perm),sd=white.result[[i]]$sd_eff),col="red",lwd=2)
+abline(v=white.result[[i]]$Ghat,lwd=2,col="darkblue")
+text(par("usr")[1]+.18*(par("usr")[2]-par("usr")[1]),par("usr")[3]+0.8*(par("usr")[4]-par("usr")[3]),paste("p =  \n", sprintf("%.3f",round(white.result[[i]]$p.val,3))),cex=1.1,font=2)
+
+
+
+#brown egg weight 1
+par(fig=c(.83-.275,.99-.275,.84-.33333,.965-.33333),mgp=c(1,.3,0), new=TRUE)
+par(mar=c(2,2,0,0))
+i<- 4
+left <- min(mean(brown.result[[i]]$Ghat_perm)-4*brown.result[[i]]$sd_eff,brown.result[[i]]$Ghat)
+right <- max(mean(brown.result[[i]]$Ghat_perm)+4*brown.result[[i]]$sd_eff,brown.result[[i]]$Ghat)
+plot(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(brown.result[[i]]$Ghat_perm),sd=brown.result[[i]]$sd_eff),col="red",lwd=2,type="l",yaxt="n",ylab="",xlab="",xaxt="n",main="")
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "gray")
+lines(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(brown.result[[i]]$Ghat_perm),sd=brown.result[[i]]$sd_eff),col="red",lwd=2)
+abline(v=brown.result[[i]]$Ghat,lwd=2,col="darkblue")
+text(par("usr")[1]+.18*(par("usr")[2]-par("usr")[1]),par("usr")[3]+0.8*(par("usr")[4]-par("usr")[3]),paste("p =  \n", sprintf("%.3f",round(brown.result[[i]]$p.val,3))),cex=1.1,font=2)
+
+
+#white fracture strength
+i<-1
+par(fig=c(.83-.275-.5,.99-.275-.5,.84-.666666,.965-.666666),mgp=c(1,.3,0), new=TRUE)
+par(mar=c(2,2,0,0))
+left <- min(mean(white.result[[i]]$Ghat_perm)-4*white.result[[i]]$sd_eff,white.result[[i]]$Ghat)
+right <- max(mean(white.result[[i]]$Ghat_perm)+4*white.result[[i]]$sd_eff,white.result[[i]]$Ghat)
+plot(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(white.result[[i]]$Ghat_perm),sd=white.result[[i]]$sd_eff),col="red",lwd=2,type="l",yaxt="n",ylab="",xlab="",xaxt="n",main="")
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "gray")
+lines(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(white.result[[i]]$Ghat_perm),sd=white.result[[i]]$sd_eff),col="red",lwd=2)
+abline(v=white.result[[i]]$Ghat,lwd=2,col="darkblue")
+text(par("usr")[1]+.18*(par("usr")[2]-par("usr")[1]),par("usr")[3]+0.8*(par("usr")[4]-par("usr")[3]),paste("p =  \n", sprintf("%.3f",round(white.result[[i]]$p.val,3))),cex=1.1,font=2)
+
+
+
+#brown fracture strength
+i<-1
+par(fig=c(.83-.275,.99-.275,.84-.666666,.965-.666666),mgp=c(1,.3,0), new=TRUE)
+par(mar=c(2,2,0,0))
+left <- min(mean(brown.result[[i]]$Ghat_perm)-4*brown.result[[i]]$sd_eff,brown.result[[i]]$Ghat)
+right <- max(mean(brown.result[[i]]$Ghat_perm)+4*brown.result[[i]]$sd_eff,brown.result[[i]]$Ghat)
+plot(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(brown.result[[i]]$Ghat_perm),sd=brown.result[[i]]$sd_eff),col="red",lwd=2,type="l",yaxt="n",ylab="",xlab="",xaxt="n",main="")
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "gray")
+lines(seq(left,right,length.out=1000),dnorm(seq(left,right,length.out=1000),mean=mean(brown.result[[i]]$Ghat_perm),sd=brown.result[[i]]$sd_eff),col="red",lwd=2)
+abline(v=brown.result[[i]]$Ghat,lwd=2,col="darkblue")
+text(par("usr")[1]+.18*(par("usr")[2]-par("usr")[1]),par("usr")[3]+0.8*(par("usr")[4]-par("usr")[3]),paste("p =  \n", sprintf("%.3f",round(brown.result[[i]]$p.val,3))),cex=1.1,font=2)
+
+
+dev.off()
+```
+
+Plots below show cumulative sum. Don't bother for now (Ignore = T).
+
+```{r, eval=FALSE}
+
+### Calculations and Pretty plots below (white)
+
+#cum.w.ew <-c(white[[5]]$alpha[1]*white[[5]]$deltaP[1])
+#for(i in 2:nrow(white[[5]])){
+#  print(i)
+#  cum.w.ew[i] <- cum.w.ew[i-1]+white[[5]]$alpha[i]*white[[5]]$deltaP[i]
+#}
+
+is.odd <- function(x) x %% 2 != 0
+
+chrColors <- white[[5]]$chr
+chrColors[which(is.odd(chrColors))] <- "#848B9B"
+chrColors[which(is.odd(as.numeric(chrColors))==F)] <- "#25282E" #Warning OK
+
+plotrows<-white[[1]][,c(5,6,7)]
+plotrows<-cbind(plotrows,1:nrow(plotrows))
+names(plotrows)[4]<-"index"
+
+png("cumulative_white.png",height=7,width=17,units="in",res=200,pointsize=18)
+plot(cum.w.ew,col=chrColors,xaxt="n",xlab="chromosome",ylab="Cum. sum",cex.legend=2,cex.main=2,main="Egg Weight")
+abline(h=quantile(permuted[1,5,],c(0.025,0.975)),col="darkblue")
+legend("topleft","c(x,y)","Significance thresholds",col="darkblue",pch="=", bg="white",cex=1.7)
+axis(1,1:28,at=aggregate( plotrows$index,by=list(plotrows$chr),FUN=median)$x)
+dev.off()
+
+### Calculations and pretty plots below (brown)
+#cum.b.ew <- c(brown[[5]]$alpha[1]*brown[[5]]$deltaP[1])
+#for(i in 2:nrow(brown[[5]])){
+#  print(i)
+#  cum.b.ew[i] <- cum.b.ew[i-1]+brown[[5]]$alpha[i]*brown[[5]]$deltaP[i]
+#}
+
+
+is.odd <- function(x) x %% 2 != 0
+
+chrColors <- brown[[5]]$chr
+chrColors[which(is.odd(chrColors))] <- "#848B9B"
+chrColors[which(is.odd(as.numeric(chrColors))==F)] <- "#25282E" #Warning OK
+
+plotrows<-brown[[5]][,c(5,6,7)]
+plotrows<-cbind(plotrows,1:nrow(plotrows))
+names(plotrows)[4]<-"index"
+
+
+png("cumulative_brown.png",height=7,width=17,units="in",res=200,pointsize=18)
+plot(cum.b.ew,col=chrColors,xaxt="n",xlab="chromosome",ylab="Cum. sum",cex.legend=2,cex.main=2,main="Egg Weight")
+abline(h=quantile(permuted[2,5,],c(0.025,0.975)),col="darkblue")
+legend("topright","c(x,y)","Significance thresholds",col="darkblue",pch="=", bg="white",cex=1.7)
+axis(1,1:28,at=aggregate( plotrows$index,by=list(plotrows$chr),FUN=median)$x)
+dev.off()
+
+```
