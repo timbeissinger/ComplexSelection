@@ -4,7 +4,6 @@ This repository houses code and data to identify selection on traits controlled 
 ## *Function:* R function to estimate G-hat from allele frequency and effect size data.
 ***Ghat.R:*** R function to estimate G-hat from allele frequency and effect size data.
 
-## *Simulations:* Code to run and analyze simulations code
 
 
 ## *Maize:* Code to analyze maize data
@@ -25,5 +24,26 @@ This repository houses code and data to identify selection on traits controlled 
 ***Frequency_change_rrBlup_outliers_removed_EW1.html:*** HTML-readable code.
 
 ***ld_calc_chicken.r:*** Code to calculate LD decay in chicken data.
+
+## *Simulations:* Code to run and analyze simulation code
+***qtl_10.prm:*** 10-QTL simulation parameter file
+***run_10.sh:*** 10-QTL simulation submission script for OpenLava cluster
+***Analyze10.Rmd:*** Code to analyze 10-QTL simulation
+***Analyze10.html:*** HTML-readable code
+
+***qtl_50.prm:*** 50-QTL simulation parameter file
+***run_50.sh:*** 50-QTL simulation submission script for OpenLava cluster
+***Analyze50.Rmd:*** Code to analyze 50-QTL simulation
+***Analyze50.html:*** HTML-readable code
+
+***qtl_100.prm:*** 100-QTL simulation parameter file
+***run_100.sh:*** 100-QTL simulation submission script for OpenLava cluster
+***Analyze100.Rmd:*** Code to analyze 100-QTL simulation
+***Analyze100.html:*** HTML-readable code
+
+***qtl_1000.prm:*** 1000-QTL simulation parameter file
+***run_1000.sh:*** 1000-QTL simulation submission script for OpenLava cluster
+***Analyze1000.Rmd:*** Code to analyze 1000-QTL simulation
+***Analyze1000.html:*** HTML-readable code
 
 ## Data

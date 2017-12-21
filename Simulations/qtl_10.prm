@@ -1,0 +1,100 @@
+/*******************************
+ **     Global parameters     **
+ *******************************/
+title = "10 QTL Simulation - Creating a LTS population - 100k SNP panel";
+nthread = 16;
+nrep  = 100;                    //Number of replicates
+h2    = 0.5;                  //Heritability
+qtlh2 = 0.5;                  //QTL heritability
+phvar = 1.0;                  //Phenotypic variance
+
+/*******************************
+ **   Historical population   **
+ *******************************/
+begin_hp;
+   hg_size = 10000 [0]          //Size of the historical generations
+             10000 [5000];
+   nmlhg   = 5000;              //Number of males in the last generation
+end_hp;
+
+/*******************************
+ **        Populations        **
+ *******************************/
+begin_pop = "SelectPop";
+   begin_founder;
+      male   [n =  500, pop = "hp"];
+      female [n = 500, pop = "hp"];
+   end_founder;
+   ls  = 10;          //Litter size
+   pmp = 0.5 /fix;            //Proportion of male progeny
+   ng  = 20;                  //Number of generations
+   md  = rnd_ug;              //Mating design
+   sr  = 1;                   //Replacement ratio for sires
+   dr  = 1;                   //Replacement ratio for dams
+   sd  = phen /h;             //Selection design
+   cd  = age;             //Culling design
+   begin_popoutput;
+        ld /maft 0.1 /gen 20;
+	data /gen 20;
+        stat;
+        genotype /snp_code /gen 20;
+        allele_freq /gen 0 5 10 15 20;
+   end_popoutput;
+end_pop;
+
+begin_pop = "DriftPop";
+   begin_founder;
+      male   [n =  500, pop = "hp"];
+      female [n = 500, pop = "hp"];
+   end_founder;
+   ls  = 10;          //Litter size
+   pmp = 0.5 /fix;            //Proportion of male progeny
+   ng  = 20;                  //Number of generations
+   md  = rnd_ug;              //Mating design
+   sr  = 1;                   //Replacement ratio for sires
+   dr  = 1;                   //Replacement ratio for dams
+   sd  = rnd;             //Selection design **RANDOM -- NO SELECTION**
+   cd  = age;             //Culling design
+   begin_popoutput;
+        ld /maft 0.1 /gen 20;
+        data /gen 20;
+        stat;
+        genotype /snp_code /gen 20;
+        allele_freq /gen 0 5 10 15 20;
+   end_popoutput;
+end_pop;
+
+
+/*******************************
+ **          Genome           **
+ *******************************/
+begin_genome;
+   begin_chr = 10;
+      chrlen = 100;            //Chromosome length
+      nmloci = 10000;          //Number of markers
+      mpos   = even;           //Marker positions
+      nma    = all 2;          //Number of marker alleles
+      maf    = rnd1;           //Marker allele frequencies
+      nqloci = 1;              //Number of QTL
+      qpos   = pd 50;           //QTL positions
+      nqa    = all 2;          //Number of QTL alleles
+      qaf    = eql;         //QTL allele frequencies
+      qae    = rnd;         //QTL allele effects
+   end_chr;
+   select_seg_loci; 	       //Only segregating loci INVESTIGATE MORE??
+   mmutr     = 2.5e-5 /recurrent; //Marker mutation rate INVESTIGATE MORE??
+   qmutr     = 2.5e-5 /recurrent;            //QTL mutation rate INVESTIGATE MORE??
+   //interference = 25;
+   //r_mpos_g;                  //Randomize marker positions across genome
+   //r_qpos_g;                  //Randomize QTL positions across genome
+end_genome;
+
+/*******************************
+ **       Output options      **
+ *******************************/
+begin_output;
+   linkage_map;
+   allele_effect;
+   hp_stat;
+   //monitor_hp_homo;
+end_output;
