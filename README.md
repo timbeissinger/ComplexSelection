@@ -1,5 +1,5 @@
 # ComplexSelection
-This repository houses code and data to identify selection on traits controlled by many loci. The corresponding manuscript, "a simple test identifies selection on complex traits in breeding and experimentally evolved populations", is available at [insert bioarxiv link here]. In this repository, we have divided files into subdirectories as outlined below. For analyses performed using R-markdown, we have deposited both raw files and html outputs.
+This repository houses code and data to identify selection on traits controlled by many loci. The corresponding preprint, "a simple test identifies selection on complex traits in breeding and experimentally evolved populations", is available at [bioRxiv](https://www.biorxiv.org/content/early/2017/12/21/238295). In this repository, we have divided files into subdirectories as outlined below. For analyses performed using R-markdown, we have deposited both raw files and html outputs.
 
 ## *Function:* R function to estimate G-hat from allele frequency and effect size data.
 * ***Ghat.R:*** R function to estimate G-hat from allele frequency and effect size data.
