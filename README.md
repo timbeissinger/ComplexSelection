@@ -47,7 +47,7 @@ This repository houses code and data to identify selection on traits controlled 
 * ***run_100.sh:*** 100-QTL simulation submission script for OpenLava cluster
 * ***Analyze100.Rmd:*** Code to analyze 100-QTL simulation
 * ***Analyze100.html:*** HTML-readable code
-* ***Map100.Rmd:*** Code to do seleciton mapping in 100-QTL simulation
+* ***Map100.Rmd:*** Code to do selection mapping in 100-QTL simulation
 * ***Map100.html:*** HTML-readable code
 * ***Analyze100_L44.Rmd:*** Code to tune LD threshold for determining M_eff. Code determines mean LD decay over a specific distance (Specified in the 44th line of the QMSim LD output file for the 100-QTL simulation)and calculate the false positive rate. This example script was repeatedly run for lines 44-58 and used to create raw data for generating the M_eff supplemental figure in the manuscript.
 
@@ -59,9 +59,56 @@ This repository houses code and data to identify selection on traits controlled 
 * ***Map1000.html:*** HTML-readable code
 * ***Analyze1000_L44.Rmd:*** Code to tune LD threshold for determining M_eff. Code determines mean LD decay over a specific distance (Specified in the 44th line of the QMSim LD output file for the 1000-QTL simulation)and calculate the false positive rate. This example script was repeatedly run for lines 44-58 and used to create raw data for generating the M_eff supplemental figure in the manuscript.
 
+* ***qtl_10000.prm:*** 10000-QTL simulation parameter file
+* ***run_10000.sh:*** 10000-QTL simulation submission script for OpenLava cluster
+* ***Analyze10000.Rmd:*** Code to analyze 10000-QTL simulation
+* ***Analyze10000.html:*** HTML-readable code
+* ***Map10000.Rmd:*** Code to do seleciton mapping in 10000-QTL simulation
+* ***Map10000.html:*** HTML-readable code
+
 * ***LD_Thresh_Fig.R:*** R code to compile LD threshold information for generating M_eff supplemental figure and determining appropriate M_eff.
 * ***PowerFigure.R:*** Code to compile power information comparing G-hat to Fst mapping and generate Figure 1 in the manuscript.
 
+* ***intermittent.prm*** Intermittent selection parameter file.
+* ***on20off5.Rmd*** Code to analyze simulation involving 20 gens with selection followed by 5 without.
+* ***on20off5.html*** HTML-readable code
+* ***on20off20.Rmd*** Code to analyze simulation involving 20 gens with selection followed by 20 without.
+* ***on20off20.html*** HTML-readable code
+* ***on20off50.Rmd*** Code to analyze simulation involving 20 gens with selection followed by 50 without.
+* ***on20off50.html*** HTML-readable code
+* ***on20off100.Rmd*** Code to analyze simulation involving 20 gens with selection followed by 100 without.
+* ***on20off100.html*** HTML-readable code
+* ***on1off5.Rmd*** Code to analyze simulation involving 1 gens with selection followed by 5 without.
+* ***on1off5.html*** HTML-readable code
+* ***on1off20.Rmd*** Code to analyze simulation involving 1 gens with selection followed by 20 without.
+* ***on1off20.html*** HTML-readable code
+
+* ***intensity.prm*** Parameter file for variable selection intensity.
+* ***intensity01.Rmd*** Code to analyze simulation involving a selected proportion of 1 percent.
+* ***intensity01.html*** HTML-readable code
+* ***intensity05.Rmd*** Code to analyze simulation involving a selected proportion of 5 percent.
+* ***intensity05.html*** HTML-readable code
+* ***intensity5.Rmd*** Code to analyze simulation involving a selected proportion of 50 percent.
+* ***intensity5.html*** HTML-readable code
+
+* ***sampleSize.RData*** Code to analyze effect of sample size.
+* ***sampleSize.html*** HTML-readable code.
+
+* ***gens.prm*** Parameter file for variable numbers of generations
+* ***Gens1.Rmd*** Code to analyze 1 generation of selection
+* ***Gens1.html*** HTML-readable code
+* ***Gens10.Rmd*** Code to analyze 10 generation of selection
+* ***Gens10.html*** HTML-readable code
+* ***Gens50.Rmd*** Code to analyze 50 generation of selection
+* ***Gens50.html*** HTML-readable code
+* ***Gens100.Rmd*** Code to analyze 100 generation of selection
+* ***Gens100.html*** HTML-readable code
+
+* ***phenotypeGen.prm*** Parameter file for varying phenotyping generation.
+* ***Phen0.Rmd*** Code to analyze phenotyping in generation 0
+* ***Phen0.html*** HTML-readable code
+* ***Phen10.Rmd*** Code to analyze phenotyping in generation 10
+* ***Phen10.html*** HTML-readable code
 
 ## Data
 * Maize data are published in:

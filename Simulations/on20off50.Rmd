@@ -1,0 +1,115 @@
+---
+title: "Analysis of the effect that intermittent selection has on Ghat with 1000 simulated QTL"
+output: html_document
+author: Timothy Beissinger
+date: 2-18-2018
+---
+
+### Summary
+We simulated a trait controlled by 1,000 QTL 100 times. For each, one population was selected for an increase in the trait and one population was not selected at all (drift only). Selection or drift persisted for a variable numebr of generations, with a variable number of post-selection generations simulated. Herein, we use these simulations to test the power of our test statistic to identify selection on the trait.
+
+### Set preliminary values and load function.
+These values will store results of the loop
+
+```{r}
+Pvals.20.50 <- c()
+source("Ghat.R")
+```
+
+### Parameters: 20-selected, 50-not-selected
+
+Simulations were performed on the IRCF Biocluster using the software QMSim. Each iteration of the loop will load data, manipulate data, conduct a test for selection, and record the p-value.
+
+```{r}
+for(sim in 1:100){
+	iter <- sprintf("%03i",sim)
+	directory="/home/beissingert/data/PolySelect_bigsims/on20off50/r_on20off50"
+
+	#load genotypes and phenotypes
+      	pheno <- read.table(paste(directory, "/20Select_50Not_data_",iter,".txt",sep=""),header=T,stringsAsFactors=F)
+	map <- read.table(paste(directory, "/lm_mrk_",iter,".txt",sep=""),header=T,stringsAsFactors=F)
+	geno <- read.table(paste(directory, "/20Select_50Not_mrk_",iter,".txt-head",sep=""),header=F,stringsAsFactors=F,skip=1,sep="", colClasses=c("numeric","character")) # read genos as characters #
+	qtlMap <- read.table(paste(directory, "/lm_qtl_",iter,".txt",sep=""),header=T,stringsAsFactors=F)
+
+	#load allele frequencies
+      	freqs0<-read.table(paste(directory, "/20GenSelect_freq_mrk_",iter,".txt",sep=""),header=T,nrows=nrow(map),fill=T,stringsAsFactors=F) #NOTE POP TAKEN FROM
+	freqs20<-read.table(paste(directory, "/20Select_50Not_freq_mrk_",iter,".txt",sep=""),header=F,skip={nrow(map)+1},fill=T,stringsAsFactors=F) #
+
+	### Manipulate genotypes by coding to -1,0,1 and so that markers are columns, individuals are rows.
+	gen <- matrix(NA,nrow=nrow(map),ncol=nrow(geno))
+	gen <- as.data.frame(gen)
+	names(gen) <- geno[,1]
+	for(i in 1:1000){
+	  #print(i)
+	  tmp <- as.numeric(unlist(strsplit(geno[i,2],split="")))
+	  tmp[which(tmp == 0)] <- -1
+	  tmp[which(tmp == 3 | tmp ==4)] <- 0
+	  tmp[which(tmp==2)] <- 1
+	  gen[,i] <- tmp
+	 }
+	gen<-t(gen)
+	gc()
+
+	### Calculate allele frequencies
+	#Gen 0
+	names(freqs0)[4]<- "Allele1"
+	names(freqs0)[5]<- "Allele2"
+	freqs0$Allele2[which(substr(freqs0$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+	freqs0$Allele1[which(substr(freqs0$Allele1,1,1)==2)] <- "1:0.00000" 
+	freqs0$Allele2[which(substr(freqs0$Allele1,3,3)==1)] <- "2:0.00000" ##
+	freqs0$Allele1 <- as.numeric(substr(freqs0$Allele1,3,1000))
+	freqs0$Allele2 <- as.numeric(substr(freqs0$Allele2,3,1000))
+
+	#Gen 20
+	names(freqs20)[4]<- "Allele1"
+	names(freqs20)[5]<- "Allele2"
+	freqs20$Allele2[which(substr(freqs20$Allele1,1,1)==2)] <- "2:1.00000" # put this in the spot for the second allele
+	freqs20$Allele1[which(substr(freqs20$Allele1,1,1)==2)] <- "1:0.00000" 
+	freqs20$Allele2[which(substr(freqs20$Allele1,3,3)==1)] <- "2:0.00000"  ##
+	freqs20$Allele1 <- as.numeric(substr(freqs20$Allele1,3,1000))
+	freqs20$Allele2 <- as.numeric(substr(freqs20$Allele2,3,1000))
+
+	#Calculate change
+	change2<-freqs20$Allele2-freqs0$Allele2
+
+### Setup for function
+    	geno <- gen
+        phen <- as.matrix(pheno[1:1000,10])
+        rownames(phen)<-pheno[1:1000,1]
+	change=change2
+	perms <- 10000
+	blockSize=100000/100
+
+### Determine num_eff
+    	potentials <- c(40000,13333,6667,4000,2857,2222,1818,1538,1333,1176,1053,667,400,286,222)
+    	ldTab <- read.table(paste(directory,"/20Select_50Not_ld_decay_",iter,".txt",sep=""),skip=43,nrows=15)
+	ld <- as.numeric(substr(ldTab[,2],1,6))
+	Meff <- potentials[which(ld <= 0.03)[1]]
+	if(is.na(Meff)) Meff <- potentials[15]  #
+	print(Meff)
+	
+
+	# Run function
+	test<- Ghat_func(geno=geno,phen=phen,change=change2,method = "scale", num_eff = Meff,  perms=1000,plot="Both")
+	Pvals.20.50[as.numeric(iter)] <- test$p.val
+}
+```
+
+
+
+
+
+
+### Report the results
+
+Below are some summary statistics about the results. Note also that I save the workspace.
+
+```{r}
+
+hist(Pvals.20.50)
+print(Pvals.20.50)
+length(which(Pvals.20.50<=0.05))/length(Pvals.20.50)
+
+
+save.image("on20off50.RData")
+```
