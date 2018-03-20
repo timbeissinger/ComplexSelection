@@ -1,5 +1,5 @@
 # ComplexSelection
-This repository houses code and data to identify selection on traits controlled by many loci. The corresponding preprint, "a simple test identifies selection on complex traits in breeding and experimentally evolved populations", is available at [bioRxiv](https://www.biorxiv.org/content/early/2017/12/21/238295). In this repository, we have divided files into subdirectories as outlined below. For analyses performed using R-markdown, we have deposited both raw files and html outputs.
+This repository houses code and data to identify selection on traits controlled by many loci. The corresponding paper, "a simple test identifies selection on complex traits", is available at [Genetics](https://www.biorxiv.org/content/early/2017/12/21/238295). In this repository, we have divided files into subdirectories as outlined below. For analyses performed using R-markdown, we have deposited both raw files and html outputs.
 
 ## *Function:* R function to estimate G-hat from allele frequency and effect size data.
 * ***Ghat.R:*** R function to estimate G-hat from allele frequency and effect size data.
@@ -114,4 +114,4 @@ This repository houses code and data to identify selection on traits controlled 
 * Maize data are published in:
   + Lorenz, A. J., Beissinger, T.M., Rodrigues, R., de Leon, N. 2015. [Selection for silage yield and composition did not affect genomic diversity within the Wisconsin Quality Synthetic maize population.](http://www.g3journal.org/content/early/2015/02/02/g3.114.015263.abstract) Genes Genomes Genetics. DOI: 10.1534/g3.114.015263.
 
-* Chicken data will be made available upon publication
+* Chicken data are available from [Figshare](https://figshare.com/articles/Brown_White_AllPhenotypes_FrequencyChange_Effects_RDS/5899267).
