@@ -184,9 +184,6 @@ Ghat_func <- function(geno=geno,phen=phen,change=change2, method = "scale", perm
 ###############################################################################
 ### This version of the function applies with externally estimated effects. ###
 ###############################################################################
-###########################################################################
-### This version of the function applies to raw genotype/phenotype data ###
-###########################################################################
 # Inputs are listed below
 #effects: Vector of effect sizes
 #change: Change in allele frequency. Must record the change at the allele corresponding to "1" in the genotype file.
